@@ -1,22 +1,18 @@
 # Build container
 FROM node:12-alpine AS build
 
-WORKDIR /usr/src/virtual-checkin/
-COPY . /usr/src/virtual-checkin/
+WORKDIR /usr/src/yac/
+COPY . /usr/src/yac/
 
-WORKDIR /usr/src/virtual-checkin/server
+WORKDIR /usr/src/yac/server
 RUN npm install
-
-WORKDIR /usr/src/virtual-checkin/client
-RUN npm install && npm run build
 
 # Runtime container
 FROM node:12-alpine
 
-COPY --from=build /usr/src/virtual-checkin/server/ /usr/src/virtual-checkin/server/
-COPY --from=build /usr/src/virtual-checkin/client/ /usr/src/virtual-checkin/client/
+COPY --from=build /usr/src/yac/server/ /usr/src/yac/server/
 
-WORKDIR /usr/src/virtual-checkin/server/
+WORKDIR /usr/src/yac/server/
 
 ENV TZ="America/New_York"
 
