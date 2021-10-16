@@ -1,5 +1,5 @@
 #NOTE: YOU HAVE TO SET THE AUTH KEY YOURSELF
-
+#TODO: rewrite in less cancerous way
 # Ideal output:
 # no uuid x2
 # no name x2
