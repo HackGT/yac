@@ -6,21 +6,20 @@ import { Interaction, IInteractionInstance, IInteraction} from "../entity/Intera
 
 import moment, {Moment} from "moment-timezone";
 import dotenv from "dotenv"
-import {InteractionType, IsCMSEvent, EventType} from "../utils/utils";
+import {InteractionType, EventType} from "../utils/utils";
 import {Date} from "mongoose";
 dotenv.config();
 const fetch = require('node-fetch');
 
-export let virtualRoutes = express.Router();
-export let inpersonRoutes = express.Router();
+export let logRoutes = express.Router();
 
 
-const inpersonRequestParams = ['uuid', 'eventID', 'eventType', 'interactionType']
+const requestParams = ['uuid', 'eventID', 'eventType', 'interactionType']
 
-inpersonRoutes.route("/inpersonInteraction").post(async (req, res) => {
+logRoutes.route("/loginteraction").post(async (req, res) => {
    
     //validate request to make sure types are there
-    for (let param of inpersonRequestParams){
+    for (let param of requestParams){
         if (!req.body[param]){
             console.log(`no ${param}`);
             return res.status(400).send(`no ${param}`);
@@ -33,19 +32,25 @@ inpersonRoutes.route("/inpersonInteraction").post(async (req, res) => {
         return res.status(400).send(`interactionType not valid`);
     }
 
+
+
+    const eventType = EventType[req.body.eventType]; 
+    console.log(Object.values(EventType))
+   console.log(EventType['food']) 
+   console.log(eventType)
     //check eventType is valid
-    if (!Object.values(EventType).includes(req.body.eventType)){
+    if (!eventType){
         console.log(`eventType not valid`);
         return res.status(400).send(`eventType not valid`);
     }
-    
+
+
+
     let endTime: Moment;
-    let warnOnDup: boolean = false;
     const now = moment.utc().tz("America/New_York");
 
     //cms stuff if its inperson
-    if (Object.values(IsCMSEvent).includes(req.body.eventType)){
-        
+    if (eventType.isCMSEvent){
         //cms event validation
         const event = await getCMSEvent(req.body.eventID);
         if (!event) {
@@ -65,11 +70,6 @@ inpersonRoutes.route("/inpersonInteraction").post(async (req, res) => {
         if (moment.duration(endTime.diff(now)).minutes() < 0) {
             console.log("Event already ended")
             return res.status(400).send("Event already ended")
-        }
-
-        //don't allow multiple food stuff
-        if (req.body.eventType==EventType.Meal){
-            warnOnDup=true;
         }
 
     } else {
@@ -93,7 +93,7 @@ inpersonRoutes.route("/inpersonInteraction").post(async (req, res) => {
     }
 
 
-    if (warnOnDup) {
+    if (eventType.warnOnDup) {
         try {
             let interaction = await Interaction.findOneAndUpdate(
                 {uuid:req.body.uuid, eventID: req.body.eventID},

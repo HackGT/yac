@@ -42,7 +42,7 @@ process.on("unhandledRejection", err => {
 });
 
 import { isAdmin } from "./auth/auth";
-import { inpersonRoutes, virtualRoutes } from "./routes/event";
+import { logRoutes } from "./routes/event";
 import { userRoutes } from "./routes/user";
 import { getEndedEvents } from "./cms"
 
@@ -51,7 +51,7 @@ app.get("/status", (req, res) => {
 });
 
 
-app.use("/inperson", isAdmin, inpersonRoutes);
+app.use("/log", isAdmin, logRoutes);
 app.use("/user", isAdmin, userRoutes);
 
 
