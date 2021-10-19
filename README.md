@@ -5,6 +5,7 @@
 ## How to Log:
 
 - Send a POST request to `/log/interaction` to log an interaction
+  - Note: This will be deployed to log.2021.hack.gt (as of now at least)
 - Requests should be signed with `ADMIN_SECRET` set as Bearer Token
 - Params for loginteraction:
   - uuid: user's Ground Truth UserID
