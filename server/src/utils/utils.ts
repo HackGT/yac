@@ -1,34 +1,23 @@
 
-//TODO: this enum needs to be duplicated across apps and matched form cms, make it do it automatiacally on starutp or something
 
 export enum InteractionType {
     Virtual = 'virtual',
     Inperson = 'inperson',
 } 
 
-
-//strings need to match cms, 
-export enum EventType{
-    Ceremony = "ceremony",
-    Food = "food",
-    Important = "important",
-    MiniChallenge = "mini-challenge",
-    MiniEvent = "mini-event",
-    Speaker = "speaker",
-    TechTalk = "tech-talk",
-    Workshop = "workshop",
-    Insight = "insight",
-    Discord = "discord"
+//TODO: this enum needs to be duplicated across apps and matched form cms, make it do it automatiacally on starutp or something
+//Note: tag strings need to match cms, 
+export const EventType = {
+     food: {tag: "food", warnOnDup: true, isCMSEvent: true},
+     ceremony: {tag: "ceremony", warnOnDup: false, isCMSEvent: true},
+     important: {tag: "important", warnOnDup: false, isCMSEvent: true},
+     minichallenge: {tag: "food", warnOnDup: false, isCMSEvent: true},
+     minievent: {tag: "food", warnOnDup: false, isCMSEvent: true},
+     speaker: {tag: "food", warnOnDup: false, isCMSEvent: true},
+     techtalk: {tag: "tech-talk", warnOnDup: false, isCMSEvent: true},
+     workshop: {tag: "workshop", warnOnDup: false, isCMSEvent: true},
+     insight: {tag: "insight", warnOnDup: false, isCMSEvent: false},
+     discord: {tag: "discord", warnOnDup: false, isCMSEvent: false}
 }
 
-export enum IsCMSEvent{
-    Food = EventType.Food,
-    Ceremony = EventType.Ceremony,
-    Important = EventType.Important,
-    MiniEvent = EventType.MiniEvent,
-    MiniChallenge = EventType.MiniChallenge,
-    TechTalk = EventType.TechTalk,
-    Speaker = EventType.Speaker,
-    Workshop = EventType.Workshop
-}
-
+export type EventType = keyof typeof EventType;
