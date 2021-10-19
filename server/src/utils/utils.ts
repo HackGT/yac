@@ -5,7 +5,6 @@ export enum InteractionType {
     Inperson = 'inperson',
 } 
 
-
 //TODO: this enum needs to be duplicated across apps and matched form cms, make it do it automatiacally on starutp or something
 //Note: tag strings need to match cms, 
 export const EventType = {
@@ -22,4 +21,3 @@ export const EventType = {
 }
 
 export type EventType = keyof typeof EventType;
-
