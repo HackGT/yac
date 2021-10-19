@@ -5,7 +5,7 @@
 ## How to Log:
 
 - Send a POST request to `/log/loginteraction` to log an interaction
-- Requests should be signed with `ADMIN_KEY_SECRET` set as Bearer Token
+- Requests should be signed with `ADMIN_SECRET` set as Bearer Token
 - Params for loginteraction:
   - uuid: user's Ground Truth UserID
   - eventID: CMS eventID if event is CMS event. Else, should just be event name (should be unique)
