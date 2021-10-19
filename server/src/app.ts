@@ -41,44 +41,21 @@ process.on("unhandledRejection", err => {
     throw err;
 });
 
-import { isAuthenticated, isAdmin } from "./auth/auth";
-import { authRoutes } from "./routes/auth";
+import { isAdmin } from "./auth/auth";
 import { inpersonRoutes, virtualRoutes } from "./routes/event";
 import { userRoutes } from "./routes/user";
 import { getEndedEvents } from "./cms"
-// import { Time, User, IUser, ITime } from "./schema";
 
 app.get("/status", (req, res) => {
     res.status(200).send("Success");
 });
 
 
-// app.get("/", (req, res) => {
-//     res.redirect("https://live.hack.gt");
-// });
-
-
-app.use("/auth", authRoutes);
-app.use("/virtual", isAuthenticated, virtualRoutes);
 app.use("/inperson", isAdmin, inpersonRoutes);
-app.use("/user", userRoutes);
-
-
-// app.get("*", (req, res) => {
-//     res.status(404).send("Sorry :( this is an invalid url");
-// })
-
-// app.listen(process.env.PORT, () => {
-//     console.log(`Virtual Check-in system v${VERSION_NUMBER} started on port ${process.env.PORT}`);
-// });
-
-
-
-
+app.use("/user", isAdmin, userRoutes);
 
 
 const router = express.Router() as expressWs.Router;
-// var router = express.Router();
 router.ws('/echo', (ws, req) => {
         ws.on('connection', (ws => {
             console.log('Client connected');
@@ -93,36 +70,8 @@ router.ws('/echo', (ws, req) => {
 });
 app.use("/ws-stuff", router);
 
-app.use(isAuthenticated, express.static(path.join(__dirname, "../../client/build")));
-
-app.get("/", isAuthenticated, (request, response) => {
-    response.sendFile(path.join(__dirname, "../../client/build", "index.html"));
-});
-
-
-app.get("*", function (req, res) {
-    res.sendFile(
-        path.join(__dirname, "../../client/build", "index.html"),
-        function (err) {
-            if (err) {
-                res.status(500).send(err);
-            }
-        }
-    );
-});
-
-app.get("/*", function (req, res) {
-    res.sendFile(
-        path.join(__dirname, "../../client/build", "index.html"),
-        function (err) {
-            if (err) {
-                res.status(500).send(err);
-            }
-        }
-    );
-});
 app.listen(PORT, () => {
-    console.log(`Virtual Check-in system v${VERSION_NUMBER} started on port ${PORT}`);
+    console.log(`YAC v${VERSION_NUMBER} started on port ${PORT}`);
 });
 
 cron.schedule('*/1 * * * *', () => {
@@ -130,24 +79,5 @@ cron.schedule('*/1 * * * *', () => {
    console.log('running a task every ' + minInterval + ' minute ' + new Date().toISOString());
    getEndedEvents(minInterval);
  });
-
-// app.use("/ws-stuff", router);
-
-// const wss = new Server({server: app, port: 8080});
-// wss.on('connection', (ws) => {
-//     console.log('Client connected');
-//     const start = Date.now();
-//     let delta;
-//     setInterval(function() {
-//         delta = Math.floor((Date.now() - start) / 1000);
-//     }, 1000);
-//     ws.on('close', () => {
-//         const time1: ITime = new Time({
-//             time: delta,
-//         });
-//         time1.save().then(() => console.log('websocket time saved'));
-//         console.log('Client disconnected')
-//     });
-// });
 
 app.disable('etag');
