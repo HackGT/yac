@@ -16,7 +16,7 @@ export let logRoutes = express.Router();
 
 const requestParams = ['uuid', 'eventID', 'eventType', 'interactionType']
 
-logRoutes.route("/loginteraction").post(async (req, res) => {
+logRoutes.route("/interaction").post(async (req, res) => {
    
     //validate request to make sure types are there
     for (let param of requestParams){
