@@ -35,9 +35,6 @@ logRoutes.route("/loginteraction").post(async (req, res) => {
 
 
     const eventType = EventType[req.body.eventType]; 
-    console.log(Object.values(EventType))
-   console.log(EventType['food']) 
-   console.log(eventType)
     //check eventType is valid
     if (!eventType){
         console.log(`eventType not valid`);
