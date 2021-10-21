@@ -39,19 +39,11 @@ export function isAdmin(request: express.Request, response: express.Response, ne
         if (key === process.env.ADMIN_SECRET) {
             next();
         } else {
+            console.log(request);
             response.status(401).send("Incorrect auth token");
         }
-    }
-    else if (!request.isAuthenticated() || !user) {
-        if (request.session) {
-            request.session.returnTo = request.originalUrl;
-        }
-        response.redirect("/auth/login");
     } else {
-        if (user['admin']==true) {
-            next();
-        } else {
-            response.redirect('/auth/login');
-        }
+        console.log(request);
+        response.status(401).send("No auth token");
     }
 }
