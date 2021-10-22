@@ -41,7 +41,7 @@ process.on("unhandledRejection", err => {
     throw err;
 });
 
-import { isAdmin } from "./auth/auth";
+import { isAdmin } from "./auth/auth"; 
 import { logRoutes } from "./routes/event";
 import { userRoutes } from "./routes/user";
 import { getEndedEvents } from "./cms"
