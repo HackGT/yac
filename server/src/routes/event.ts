@@ -167,11 +167,11 @@ logRoutes.route("/interaction").post(async (req, res) => {
     }
 })
 
-const requestParams2 = ['uuid', 'eventID', 'eventType', 'virtualDuration']
-
+// const requestParams2 = ['uuid', 'eventID', 'eventType', 'virtualDuration']
 logRoutes.route("/virtualinteraction").post(async (req, res) => {
-
+    const requestParams2 = ['uuid', 'eventID', 'eventType', 'virtualDuration']
     //validate request to make sure types are there
+    console.log(req.body)
     for (let param of requestParams2){
         if (!req.body[param]){
             console.log(`no ${param} `);
