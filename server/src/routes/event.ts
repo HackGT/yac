@@ -187,9 +187,10 @@ logRoutes.route("/interaction").post(async (req, res) => {
 // const requestParams2 = ['uuid', 'eventID', 'eventType', 'virtualDuration']
 logRoutes.route("/virtualinteraction").post(async (req, res) => {
     try {
+        // console.log(req.body)
         const requestParams2 = ['uuid', 'eventID', 'eventType', 'virtualDuration']
         //validate request to make sure types are there
-        console.log(req.body)
+        // console.log(req.body)
         for (let param of requestParams2){
             if (!req.body[param]){
                 console.log(`no ${param} `);
@@ -215,7 +216,6 @@ logRoutes.route("/virtualinteraction").post(async (req, res) => {
 
         //cms stuff if its inperson
 
-            //cms event validation
 
 
         const event = await getCMSEvent(req.body.eventID);
@@ -289,5 +289,128 @@ logRoutes.route("/virtualinteraction").post(async (req, res) => {
         console.log((err as Error).message);
         return res.sendStatus(500);
     }
+    
+})
+
+
+logRoutes.route("/dailyeventlog/:eventID").get(async (req, res) => {
+
+    // console.log(req.params.eventID)
+    const event = await getCMSEvent(req.params.eventID);
+    console.log('second')
+    // console.log(event)
+
+    if (!event ||  !event.url    || !event.url.includes('daily')) {
+        return res.status(400).send("error not right");
+    }
+
+    let meetingurl = event.url
+ 
+    let id = meetingurl.split("/").slice(-1)[0];
+    var url = "https://api.daily.co/v1/meetings/" + '?room=' + id;
+    const meetingInfo = await fetch(url, {
+        method: "GET",
+        headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + String(process.env.DAILY_KEY)
+        }
+    });
+
+    const dailySessionInfo = await meetingInfo.json();
+    // console.log(dailySessionInfo)
+    const sessionInfo =  dailySessionInfo.data; // traverse through the sessions and only consider the ones that are with in time range of event
+    if (sessionInfo) {
+        for(var k = 0; k < sessionInfo.length; k++) {
+                var sessionStartTime = new Date(sessionInfo[k]?.start_time * 1000);
+                var sessionEndTime = new Date(sessionInfo[k]?.end_time * 1000);
+                var eventStartTime = new Date(event.startDate);
+                var eventEndTime = new Date(event.endDate);
+                if(sessionEndTime < eventStartTime) { // break loop cause array is already sorted in reverse chronological order
+                    break;
+                }
+                // if(sessionStartTime >= eventStartTime && sessionStartTime <= eventEndTime) {
+                if (sessionStartTime <= eventEndTime && sessionEndTime >= eventStartTime) {
+
+                    const participants = sessionInfo.participants;
+                    let map = new Map();
+
+                    const startTime = moment(event.startDate).tz("America/New_York");
+                    const endTime = moment(event.endDate).tz("America/New_York");
+
+                    let totalduration = endTime.diff(startTime, "seconds")
+                    for(var j = 0; j < participants.length; j++) {
+                        // console.log(participants[j])
+                        // console.log(j, participants.length)
+                        let js_jointime = new Date(participants[j].join_time*1000)
+                        let js_endtime = new Date((participants[j].join_time+ participants[j].duration)*1000)
+                        let js_duration;
+                        if (moment(js_endtime).tz("America/New_York").diff(startTime, "seconds") < 0) {
+                            js_duration = 0
+                        } else {
+                            // js_duration = moment(js_jointime).tz("America/New_York").diff(startTime, "seconds") 
+                            js_duration = startTime.diff(moment(js_jointime).tz("America/New_York"), "seconds") 
+                            if (js_duration > 0) {
+                                js_duration = participants[j].duration - js_duration
+                            } else {
+                                js_duration = participants[j].duration
+                            }
+                        }
+                        if (moment(js_jointime).tz("America/New_York").diff(endTime, "seconds") > 0) {
+                            js_duration = 0
+                        } else {
+                            let js_duration_end = moment(js_endtime).tz("America/New_York").diff(endTime, "seconds") 
+                            if (js_duration > 0) {
+                                js_duration = js_duration - js_duration_end
+                            }
+                        }
+                        if(map.has(participants[j].user_id)) { // update the duration
+                            var current = map.get(participants[j].user_id);
+                            current.virtualDuration += js_duration;
+                            current.instances.push({
+                                timeIn: js_jointime,
+                                timeOut: js_endtime,
+                                eventType: 'virtual' 
+                            })
+                        } else {
+                            let interaction = await Interaction.findOne({uuid: participants[j].user_id, 
+                                eventID: event.id })
+                            if (!interaction) {
+                                interaction = createNew(Interaction, {
+                                    uuid: participants[j].user_id,
+                                    eventID: event.id,
+                                    instances: [{
+                                        timeIn: js_jointime,
+                                        timeOut: js_endtime,
+                                        interactionType: 'virtual'
+                                    } as IInteractionInstance],
+                                    virtualDuration: js_duration,
+                                    eventTotalDuration: totalduration,
+                                    eventName: event.name,
+                                    eventType: event.type.name,
+                                    eventStartTime: event.startDate,
+                                    eventEndTime: event.endDate
+                                })
+                            } else {
+                                interaction.instances = [{
+                                    timeIn: js_jointime,
+                                    timeOut: js_endtime,
+                                    interactionType: 'virtual'
+                                } as IInteractionInstance]
+                                interaction.virtualDuration =  js_duration
+                            }
+                            map.set(participants[j].user_id, interaction);
+                        }
+                    }
+                    map.forEach((value)=> {
+                        value.virtualDuration = Math.min(value.virtualDuration, endTime.diff(startTime, "seconds"))
+                        value.save()
+                        console.log(value)
+                    })
+                }
+        }
+    }
+
+    
     
 })

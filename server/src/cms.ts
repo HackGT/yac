@@ -43,6 +43,7 @@ export const getCMSEvent = async (eventId) => {
     const variables = {
         "id": eventId
     }
+    console.log(process.env.CMS_URL, eventId)
 
     const res = await fetch(process.env.CMS_URL || "https://cms.hack.gt/admin/api", {
         method: "POST",
@@ -53,7 +54,10 @@ export const getCMSEvent = async (eventId) => {
         })
     });
 
+    console.log(res)
+
     const data = await res.json();
+    console.log(data)
 
     return data.data?.Event as ICMSEvent | null;
 }
