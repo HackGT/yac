@@ -332,10 +332,10 @@ logRoutes.route("/dailyeventlog/:eventID").get(async (req, res) => {
                 // if(sessionEndTime < eventStartTime) { // break loop cause array is already sorted in reverse chronological order
                 //     break;
                 // }
-                console.log(sessionInfo[k])
+                // console.log(sessionInfo[k])
                 // if(sessionStartTime >= eventStartTime && sessionStartTime <= eventEndTime) {
                 if (sessionStartTime <= eventEndTime && sessionEndTime >= eventStartTime) {
-                    console.log('here')
+                    // console.log(sessionStartTime, sessionEndTime, eventStartTime, eventEndTime, k)
 
                     const participants = sessionInfo[k].participants;
                     let map = new Map();
@@ -346,24 +346,37 @@ logRoutes.route("/dailyeventlog/:eventID").get(async (req, res) => {
                     let totalduration = endTime.diff(startTime, "seconds")
                     for(var j = 0; j < participants.length; j++) {
                         if (participants[j].user_id) {
-                            try {
-                                let user = await User.findOneAndUpdate(
-                                    {uuid:req.body.uuid},
-                                    {$setOnInsert: 
-                                        createNew<IUser>(User, {
-                                            uuid: req.body.uuid,
+                            console.log('be user')
+                            // try {
+                            //     let user = await User.findOneAndUpdate(
+                            //         {uuid: participants[j].user_id},
+                            //         {$setOnInsert: 
+                            //             createNew<IUser>(User, {
+                            //                 uuid: participants[j].user_id,
+                            //                 admin: false
+                            //         })},
+                            //         { upsert: true, new: true, runValidators: true });
+                            // } catch (e) {
+                            //     console.log(`Error when getting/inserting user: ${e} `) 
+                            //     return res.status(400).send("error when get/insert user");
+                            // }
+                            let user = await User.findOne({uuid: participants[j].user_id})
+                            if (!user) {
+                                user = createNew<IUser>(User, {
+                                            uuid: participants[j].user_id,
                                             admin: false
-                                    })},
-                                    { upsert: true, new: true, runValidators: true });
-                            } catch (e) {
-                                console.log(`Error when getting/inserting user: ${e} `) 
-                                return res.status(400).send("error when get/insert user");
+                                })
                             }
+                            await user.save()
+
+                            console.log(user, participants[j].user_id)
+                            console.log('after')
                             // console.log(participants[j])
                             // console.log(j, participants.length)
                             let js_jointime = new Date(participants[j].join_time*1000)
                             let js_endtime = new Date((participants[j].join_time+ participants[j].duration)*1000)
                             let js_duration;
+                            console.log(js_jointime, participants[j].duration, js_endtime, participants[j].join_time*1000)
                             if (moment(js_endtime).tz("America/New_York").diff(startTime, "seconds") < 0) {
                                 js_duration = 0
                             } else {
@@ -383,6 +396,7 @@ logRoutes.route("/dailyeventlog/:eventID").get(async (req, res) => {
                                     js_duration = js_duration - js_duration_end
                                 }
                             }
+                            console.log('hrerere')
                             if(map.has(participants[j].user_id)) { // update the duration
                                 var current = map.get(participants[j].user_id);
                                 current.virtualDuration += js_duration;
@@ -411,6 +425,7 @@ logRoutes.route("/dailyeventlog/:eventID").get(async (req, res) => {
                                         eventEndTime: event.endDate
                                     })
                                 } else {
+                                    js_duration
                                     interaction.instances = [{
                                         timeIn: js_jointime,
                                         timeOut: js_endtime,
@@ -429,8 +444,9 @@ logRoutes.route("/dailyeventlog/:eventID").get(async (req, res) => {
                     map.forEach((value)=> {
                         value.virtualDuration = Math.min(value.virtualDuration, endTime.diff(startTime, "seconds"))
                         value.save()
-                        console.log(value)
+                        // console.log(value)
                     })
+                    console.log('done')
                 }
         }
     }
