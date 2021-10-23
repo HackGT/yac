@@ -26,6 +26,8 @@ logRoutes.route("/interaction").post(async (req, res) => {
             }
         }
 
+        console.log('got here');
+
         //check interactiontype is valid
         if (!Object.values(InteractionType).includes(req.body.interactionType)){
             console.log(`interactionType not valid `);
@@ -38,6 +40,8 @@ logRoutes.route("/interaction").post(async (req, res) => {
             console.log(`eventType not valid `);
             return res.status(400).send(`eventType not valid`);
         }
+
+        console.log('got here 2');
 
         let endTime: Moment;
         const now = moment.utc().tz("America/New_York");
@@ -59,6 +63,8 @@ logRoutes.route("/interaction").post(async (req, res) => {
                 console.log("cms eventType not same as req eventType")
                 return res.status(400).send("cms eventType not same as req eventType")
             }
+        
+            console.log('got here 3a');
 
         endTime = moment(event.endDate).tz("America/New_York");
         let startTime = moment(event.startDate).tz("America/New_York");
@@ -98,7 +104,10 @@ logRoutes.route("/interaction").post(async (req, res) => {
             return res.status(400).send("error when get/insert user");
         }
 
+        console.log('got here 3b');
+
         if (eventType.warnOnDup) {
+            console.log('got here 3c');
             try {
                 let interaction = await Interaction.findOneAndUpdate(
                     {uuid:req.body.uuid, eventID: req.body.eventID},
@@ -139,6 +148,7 @@ logRoutes.route("/interaction").post(async (req, res) => {
         } else {
             //pushes interaction instance, adds if it isnt already there
             try {
+                console.log('got here 4');
                 let interaction = await Interaction.updateOne(
                     {uuid: req.body.uuid, eventID: req.body.eventID},
                     {$push:
@@ -159,6 +169,8 @@ logRoutes.route("/interaction").post(async (req, res) => {
                     $inc: {_v: 1}
                     },
                     { upsert: true, new: true, runValidators: true });
+
+                    console.log('got here 5');
             } catch (e) {
                 console.log(`Error when getting/inserting interaction: Error: ${e} `) 
                 return res.status(400).send("error when get/insert interaction");
