@@ -300,6 +300,7 @@ logRoutes.route("/dailyeventlog/:eventID").get(async (req, res) => {
     console.log('second')
     // console.log(event)
 
+
     if (!event ||  !event.url    || !event.url.includes('daily')) {
         return res.status(400).send("error not right");
     }
@@ -320,19 +321,23 @@ logRoutes.route("/dailyeventlog/:eventID").get(async (req, res) => {
     const dailySessionInfo = await meetingInfo.json();
     // console.log(dailySessionInfo)
     const sessionInfo =  dailySessionInfo.data; // traverse through the sessions and only consider the ones that are with in time range of event
+
     if (sessionInfo) {
         for(var k = 0; k < sessionInfo.length; k++) {
                 var sessionStartTime = new Date(sessionInfo[k]?.start_time * 1000);
-                var sessionEndTime = new Date(sessionInfo[k]?.end_time * 1000);
+                // var sessionEndTime = new Date( (sessionInfo[k]?.start_time + sessionInfo[k]?.duration) * 1000);
                 var eventStartTime = new Date(event.startDate);
                 var eventEndTime = new Date(event.endDate);
-                if(sessionEndTime < eventStartTime) { // break loop cause array is already sorted in reverse chronological order
-                    break;
-                }
+                var sessionEndTime = new Date(event.endDate);
+                // if(sessionEndTime < eventStartTime) { // break loop cause array is already sorted in reverse chronological order
+                //     break;
+                // }
+                console.log(sessionInfo[k])
                 // if(sessionStartTime >= eventStartTime && sessionStartTime <= eventEndTime) {
                 if (sessionStartTime <= eventEndTime && sessionEndTime >= eventStartTime) {
+                    console.log('here')
 
-                    const participants = sessionInfo.participants;
+                    const participants = sessionInfo[k].participants;
                     let map = new Map();
 
                     const startTime = moment(event.startDate).tz("America/New_York");
@@ -340,67 +345,86 @@ logRoutes.route("/dailyeventlog/:eventID").get(async (req, res) => {
 
                     let totalduration = endTime.diff(startTime, "seconds")
                     for(var j = 0; j < participants.length; j++) {
-                        // console.log(participants[j])
-                        // console.log(j, participants.length)
-                        let js_jointime = new Date(participants[j].join_time*1000)
-                        let js_endtime = new Date((participants[j].join_time+ participants[j].duration)*1000)
-                        let js_duration;
-                        if (moment(js_endtime).tz("America/New_York").diff(startTime, "seconds") < 0) {
-                            js_duration = 0
-                        } else {
-                            // js_duration = moment(js_jointime).tz("America/New_York").diff(startTime, "seconds") 
-                            js_duration = startTime.diff(moment(js_jointime).tz("America/New_York"), "seconds") 
-                            if (js_duration > 0) {
-                                js_duration = participants[j].duration - js_duration
+                        if (participants[j].user_id) {
+                            try {
+                                let user = await User.findOneAndUpdate(
+                                    {uuid:req.body.uuid},
+                                    {$setOnInsert: 
+                                        createNew<IUser>(User, {
+                                            uuid: req.body.uuid,
+                                            admin: false
+                                    })},
+                                    { upsert: true, new: true, runValidators: true });
+                            } catch (e) {
+                                console.log(`Error when getting/inserting user: ${e} `) 
+                                return res.status(400).send("error when get/insert user");
+                            }
+                            // console.log(participants[j])
+                            // console.log(j, participants.length)
+                            let js_jointime = new Date(participants[j].join_time*1000)
+                            let js_endtime = new Date((participants[j].join_time+ participants[j].duration)*1000)
+                            let js_duration;
+                            if (moment(js_endtime).tz("America/New_York").diff(startTime, "seconds") < 0) {
+                                js_duration = 0
                             } else {
-                                js_duration = participants[j].duration
+                                // js_duration = moment(js_jointime).tz("America/New_York").diff(startTime, "seconds") 
+                                js_duration = startTime.diff(moment(js_jointime).tz("America/New_York"), "seconds") 
+                                if (js_duration > 0) {
+                                    js_duration = participants[j].duration - js_duration
+                                } else {
+                                    js_duration = participants[j].duration
+                                }
                             }
-                        }
-                        if (moment(js_jointime).tz("America/New_York").diff(endTime, "seconds") > 0) {
-                            js_duration = 0
-                        } else {
-                            let js_duration_end = moment(js_endtime).tz("America/New_York").diff(endTime, "seconds") 
-                            if (js_duration > 0) {
-                                js_duration = js_duration - js_duration_end
+                            if (moment(js_jointime).tz("America/New_York").diff(endTime, "seconds") > 0) {
+                                js_duration = 0
+                            } else {
+                                let js_duration_end = moment(js_endtime).tz("America/New_York").diff(endTime, "seconds") 
+                                if (js_duration > 0) {
+                                    js_duration = js_duration - js_duration_end
+                                }
                             }
-                        }
-                        if(map.has(participants[j].user_id)) { // update the duration
-                            var current = map.get(participants[j].user_id);
-                            current.virtualDuration += js_duration;
-                            current.instances.push({
-                                timeIn: js_jointime,
-                                timeOut: js_endtime,
-                                eventType: 'virtual' 
-                            })
-                        } else {
-                            let interaction = await Interaction.findOne({uuid: participants[j].user_id, 
-                                eventID: event.id })
-                            if (!interaction) {
-                                interaction = createNew(Interaction, {
-                                    uuid: participants[j].user_id,
-                                    eventID: event.id,
-                                    instances: [{
+                            if(map.has(participants[j].user_id)) { // update the duration
+                                var current = map.get(participants[j].user_id);
+                                current.virtualDuration += js_duration;
+                                current.instances.push({
+                                    timeIn: js_jointime,
+                                    timeOut: js_endtime,
+                                    eventType: 'virtual' 
+                                })
+                            } else {
+                                let interaction = await Interaction.findOne({uuid: participants[j].user_id, 
+                                    eventID: event.id })
+                                if (!interaction) {
+                                    interaction = createNew(Interaction, {
+                                        uuid: participants[j].user_id,
+                                        eventID: event.id,
+                                        instances: [{
+                                            timeIn: js_jointime,
+                                            timeOut: js_endtime,
+                                            interactionType: 'virtual'
+                                        } as IInteractionInstance],
+                                        virtualDuration: js_duration,
+                                        eventTotalDuration: totalduration,
+                                        eventName: event.name,
+                                        eventType: event.type.name,
+                                        eventStartTime: event.startDate,
+                                        eventEndTime: event.endDate
+                                    })
+                                } else {
+                                    interaction.instances = [{
                                         timeIn: js_jointime,
                                         timeOut: js_endtime,
                                         interactionType: 'virtual'
-                                    } as IInteractionInstance],
-                                    virtualDuration: js_duration,
-                                    eventTotalDuration: totalduration,
-                                    eventName: event.name,
-                                    eventType: event.type.name,
-                                    eventStartTime: event.startDate,
-                                    eventEndTime: event.endDate
-                                })
-                            } else {
-                                interaction.instances = [{
-                                    timeIn: js_jointime,
-                                    timeOut: js_endtime,
-                                    interactionType: 'virtual'
-                                } as IInteractionInstance]
-                                interaction.virtualDuration =  js_duration
+                                    } as IInteractionInstance]
+                                    interaction.virtualDuration =  js_duration
+                                }
+                                map.set(participants[j].user_id, interaction);
                             }
-                            map.set(participants[j].user_id, interaction);
+
                         }
+                        // console.log(participants[j])
+                        // console.log(j, participants.length)
+                      
                     }
                     map.forEach((value)=> {
                         value.virtualDuration = Math.min(value.virtualDuration, endTime.diff(startTime, "seconds"))
