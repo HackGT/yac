@@ -59,8 +59,6 @@ export const getCMSEvent = async (eventId) => {
 }
 
 
-
-
 export const getEndedEvents = async(minInterval) =>  {
     // var curr  = new Date("2021-09-29T06:45:00.000Z"); // this is the sample event ive been working with later on change this to new Date()
     var curr  = new Date();

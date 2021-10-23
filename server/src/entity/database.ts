@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 const MONGO_URL = String(process.env.MONGO_URL);
 
+
 mongoose.connect(MONGO_URL, { useNewUrlParser: true, useUnifiedTopology: true }).catch(err => {
     throw err;
 });
