@@ -33,7 +33,6 @@ const query = `
 `;
 
 
-
 export const getCMSEvent = async (eventId) => {
     const headers = {
         "Content-Type": "application/json",
@@ -44,7 +43,7 @@ export const getCMSEvent = async (eventId) => {
         "id": eventId
     }
 
-    const res = await fetch(process.env.CMS_URL || "https://cms.hack.gt/admin/api", {
+    const res = await fetch("https://cms.hack.gt/admin/api", {
         method: "POST",
         headers: headers,
         body: JSON.stringify({

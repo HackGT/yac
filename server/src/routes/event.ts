@@ -469,5 +469,6 @@ logRoutes.route("/dailyeventlog/:eventID").get(async (req, res) => {
                     console.log('done')
                 }
         }
-    }    
+    }  
+    return res.status(200).send("success");
 })
