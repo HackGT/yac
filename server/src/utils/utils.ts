@@ -18,7 +18,8 @@ export const EventType = {
      "workshop": { warnOnDup: false, isCMSEvent: true},
      "insight": { warnOnDup: false, isCMSEvent: false},
      "discord": {warnOnDup: false, isCMSEvent: false},
-     "scavengerhunt": {warnOnDup: false, isCMSEvent: false}
+     "scavengerhunt": {warnOnDup: false, isCMSEvent: false},
+     "submission-expo": {warnOnDup: false, isCMSEvent: false}
 }
 
 export type EventType = keyof typeof EventType;
