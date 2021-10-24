@@ -7,9 +7,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import * as cron from 'node-cron'
 // import {Server} from "ws";
-import expressWs from 'express-ws';
-
-import http from "http";
+ 
 
 dotenv.config();
 
@@ -34,7 +32,6 @@ app.use((req, res, next) => {
     }
     next();
   });
-
 
 // Throw and show a stack trace on an unhandled Promise rejection instead of logging an unhelpful warning
 process.on("unhandledRejection", err => {
