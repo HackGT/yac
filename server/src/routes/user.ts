@@ -21,6 +21,7 @@ export let userRoutes = express.Router();
 
 userRoutes.route("/events/:userId").get(async (req, res) => {
     const userId = req.params.userId;
+    console.log(userId)
 
     if (!userId) {
         return res.status(400).send("userId not defined");
