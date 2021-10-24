@@ -321,7 +321,7 @@ logRoutes.route("/dailyeventlog/:eventID").get(async (req, res) => {
     const dailySessionInfo = await meetingInfo.json();
     // console.log(dailySessionInfo)
     const sessionInfo =  dailySessionInfo.data; // traverse through the sessions and only consider the ones that are with in time range of event
-
+    console.log('after daily call')
     if (sessionInfo) {
         for(var k = 0; k < sessionInfo.length; k++) {
                 var sessionStartTime = new Date(sessionInfo[k]?.start_time * 1000);
