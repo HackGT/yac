@@ -74,10 +74,10 @@ app.listen(PORT, () => {
     console.log(`YAC v${VERSION_NUMBER} started on port ${PORT}`);
 });
 
-cron.schedule('*/5 * * * *', () => {
-   let minInterval = 5;
-   console.log('running a task every ' + minInterval + ' minute ' + new Date().toISOString());
-   getEndedEvents(minInterval);
- });
+// cron.schedule('*/5 * * * *', () => {
+//    let minInterval = 5;
+//    console.log('running a task every ' + minInterval + ' minute ' + new Date().toISOString());
+//    getEndedEvents(minInterval);
+//  });
 
 app.disable('etag');
