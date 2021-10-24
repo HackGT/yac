@@ -70,11 +70,11 @@ logRoutes.route("/interaction").post(async (req, res) => {
         let startTime = moment(event.startDate).tz("America/New_York");
 
         console.log(event.endDate) 
-            //event already over check
-            if (moment.duration(endTime.diff(now)).minutes() < 0) {
-                console.log("Event already ended ")
-                return res.status(400).send("Event already ended")
-            }
+//             //event already over check
+//             if (moment.duration(endTime.diff(now)).minutes() < 0) {
+//                 console.log("Event already ended ")
+//                 return res.status(400).send("Event already ended")
+//             }
 
             name = event.name;
             eventstarttime = event.startDate;
