@@ -304,6 +304,7 @@ logRoutes.route("/dailyeventlog/:eventID").get(async (req, res) => {
     if (!event ||  !event.url    || !event.url.includes('daily')) {
         return res.status(400).send("error not right");
     }
+    console.log('after event check')
 
     let meetingurl = event.url
  
