@@ -23,7 +23,7 @@
 ## How to Read Logs:
 - Routes located in `user.ts`
 - Same as VCheckin
-- TODO: look at what's in there and fill this out, only prizes shoudl care about this
+- TODO: look at what's in there and fill this out, only prizes should care about this
 
 
 ## Contributing:
