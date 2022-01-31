@@ -1,11 +1,12 @@
 import express from "express";
-import { IUser, User} from "../entity/User";
-import { Interaction } from "../entity/Interaction";
-import { getCMSEvent } from "../cms"
-import { isAdmin } from "../auth/auth";
 import moment from "moment-timezone";
 
-export let userRoutes = express.Router();
+import { IUser, User } from "../entity/User";
+import { Interaction } from "../entity/Interaction";
+import { getCMSEvent } from "../cms";
+import { isAdmin } from "../auth/auth";
+
+export const userRoutes = express.Router();
 
 // userRoutes.route("/points/:userId").get(async (req, res) => {
 //     const userId = req.params.userId;
@@ -20,37 +21,36 @@ export let userRoutes = express.Router();
 // });
 
 userRoutes.route("/events/:userId").get(async (req, res) => {
-    const userId = req.params.userId;
+  const { userId } = req.params;
 
-    if (!userId) {
-        return res.status(400).send("userId not defined");
-    }
+  if (!userId) {
+    return res.status(400).send("userId not defined");
+  }
 
-    let interactions = await Interaction.find({ uuid: userId });
+  const interactions = await Interaction.find({ uuid: userId });
 
-    if (!interactions) {
-        return res.status(400).send("User not found or User has not attended any events");
-    }
-    return res.send({ interactions: interactions });
+  if (!interactions) {
+    return res.status(400).send("User not found or User has not attended any events");
+  }
+  return res.send({ interactions });
 });
 
 userRoutes.route("/interaction").post(async (req, res) => {
-    if (!req.body.uuid) {
-        return res.status(400).send("userId not defined");
-    }
+  if (!req.body.uuid) {
+    return res.status(400).send("userId not defined");
+  }
 
-    let interaction = await Interaction.findOne({ uuid: req.body.uuid, eventID: req.body.eventID });
+  const interaction = await Interaction.findOne({ uuid: req.body.uuid, eventID: req.body.eventID });
 
-    if (!interaction ) {
-        return res.status(400).send("User has not attended this event");
-    }
-    const event = await getCMSEvent(req.body.eventID);
-    if (!event) {
-        return res.status(400).send("Event id not correct!");
-    } 
-    return res.send({ interaction: interaction });
+  if (!interaction) {
+    return res.status(400).send("User has not attended this event");
+  }
+  const event = await getCMSEvent(req.body.eventID);
+  if (!event) {
+    return res.status(400).send("Event id not correct!");
+  }
+  return res.send({ interaction });
 });
-
 
 // userRoutes.route("/events/:userId").get(async (req, res) => {
 //     const userId = req.params.userId;
@@ -80,13 +80,12 @@ userRoutes.route("/interaction").post(async (req, res) => {
 //                 events[i].attended[events[i].attended.length - 1].exit = data.endDate;
 //                 await user.save(err => console.log(err));
 //                 // console.log(events[i].attended[events[i].attended.length - 1])
-//             } 
+//             }
 //         }
 //     }
 
-
 //     return res.status(200).send("updated the end time");
-// }) 
+// })
 
 //     if (!data.userId || !data.event) {
 //         return res.status(400).send({ error: true, message: "Invalid request" });

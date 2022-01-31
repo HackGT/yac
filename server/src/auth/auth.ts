@@ -1,10 +1,12 @@
 import mongoose = require("mongoose");
 import express = require("express");
 import session = require("express-session");
-const MongoStore = require("connect-mongo")(session);
 import dotenv from "dotenv";
+
 import { app } from "../app";
 import { IUser } from "../entity/User";
+
+const MongoStore = require("connect-mongo")(session);
 
 dotenv.config();
 
@@ -30,20 +32,23 @@ app.use(
   })
 );
 
-
-export function isAdmin(request: express.Request, response: express.Response, next: express.NextFunction): void {
-    const user = request.user as IUser;
-    const auth = request.headers.authorization;
-    if (auth && typeof auth === "string" && auth.includes(" ")) {
-        const key = auth.split(" ")[1];
-        if (key === process.env.ADMIN_SECRET) {
-            next();
-        } else {
-            console.log(request);
-            response.status(401).send("Incorrect auth token");
-        }
+export function isAdmin(
+  request: express.Request,
+  response: express.Response,
+  next: express.NextFunction
+): void {
+  const user = request.user as IUser;
+  const auth = request.headers.authorization;
+  if (auth && typeof auth === "string" && auth.includes(" ")) {
+    const key = auth.split(" ")[1];
+    if (key === process.env.ADMIN_SECRET) {
+      next();
     } else {
-        console.log(request);
-        response.status(401).send("No auth token");
+      console.log(request);
+      response.status(401).send("Incorrect auth token");
     }
+  } else {
+    console.log(request);
+    response.status(401).send("No auth token");
+  }
 }

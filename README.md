@@ -1,6 +1,6 @@
-# Yet Another Checkin 
+# Yet Another Checkin
 
-## Logs every interaction for every* event at HackGT 
+## Logs every interaction for every\* event at HackGT
 
 ## How to Log:
 
@@ -21,16 +21,13 @@
 - Log route located in `event.ts`
 
 ## How to Read Logs:
+
 - Routes located in `user.ts`
 - Same as VCheckin
 - TODO: look at what's in there and fill this out, only prizes should care about this
 
-
 ## Contributing:
+
 1. Go to `/server`
-2. Run `npm run dev`
-
-
-* Actually not all of them yet
-**Alternative to the npm commands, you may also use `yarn` alternatives.  
-
+2. `yarn install`
+3. Run `yarn dev`
